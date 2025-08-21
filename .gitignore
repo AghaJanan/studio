@@ -26,10 +26,14 @@ yarn-error.log*
 
 # local env files
 .env*.local
-.env
 
 # vercel
 .vercel
 
-# turbo
-.turbo
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# genkit
+.genkit/
+.genkit-cache.json

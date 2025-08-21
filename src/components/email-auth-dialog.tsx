@@ -128,11 +128,19 @@ export function EmailAuthDialog() {
         description: "Welcome back.",
       });
       setOpen(false);
-    } catch (error) {
+    } catch (error: any) {
+        let description = 'An unknown error occurred. Please try again.';
+        if (error.code === 'auth/popup-closed-by-user') {
+            description = 'The sign-in window was closed before completing.';
+        } else if (error.code === 'auth/cancelled-popup-request') {
+            description = 'Multiple sign-in windows were opened. Please try again.';
+        } else if (error.code === 'auth/unauthorized-domain') {
+            description = 'This domain is not authorized for Google Sign-In. Please check your Firebase console settings.'
+        }
       toast({
         variant: 'destructive',
-        title: 'Sign In Error',
-        description: 'Failed to sign in with Google. Please try again.',
+        title: 'Google Sign In Error',
+        description: description
       });
     }
   };

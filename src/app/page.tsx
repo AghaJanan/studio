@@ -30,17 +30,17 @@ export default function Home() {
           <p className="max-w-xl text-lg text-muted-foreground">
             The simplest way to manage your hostels. Add, view, and organize all your properties from one modern, slick dashboard.
           </p>
-          {!user && (
-            <div className="mt-4">
-              <AuthButton />
-            </div>
-          )}
-          {user && (
+          
+          {user ? (
              <Button asChild>
               <Link href="/dashboard">
                 Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
+          ) : (
+            <div className="mt-4">
+               <AuthButton />
+            </div>
           )}
         </div>
       </main>

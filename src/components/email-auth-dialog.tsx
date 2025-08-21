@@ -17,7 +17,7 @@ import { Button } from './ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
 import { Input } from './ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithEmailAndPassword, signUpWithEmailAndPassword } from '@/lib/firebase/auth';
+import { signInWithEmailAndPassword, signUpWithEmailAndPassword, signInWithGoogle } from '@/lib/firebase/auth';
 import { LogIn } from 'lucide-react';
 
 const signUpSchema = z.object({
@@ -32,6 +32,40 @@ const signInSchema = z.object({
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
 type SignInFormData = z.infer<typeof signInSchema>;
+
+function GoogleSignInButton() {
+    return (
+      <Button variant="outline" className="w-full">
+        <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+            <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 23.4 172.9 61.9l-72.2 72.2C297.1 114.5 273.5 104 248 104c-73.8 0-134.3 60.5-134.3 134.3s60.5 134.3 134.3 134.3c81.5 0 115.7-60.2 120.7-90.3H248.1v-64.8h239.9c3.3 18.4 5.9 37.5 5.9 58.3z"></path>
+        </svg>
+        Sign in with Google
+      </Button>
+    );
+}
+
+function AuthForm({
+    children,
+    onSubmit,
+    isSubmitting,
+    buttonText,
+    submittingText,
+}: {
+    children: React.ReactNode;
+    onSubmit: () => void;
+    isSubmitting: boolean;
+    buttonText: string;
+    submittingText: string;
+}) {
+    return (
+        <form onSubmit={onSubmit} className="space-y-4 pt-4">
+            {children}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? submittingText : buttonText}
+            </Button>
+        </form>
+    )
+}
 
 export function EmailAuthDialog() {
   const [open, setOpen] = React.useState(false);
@@ -86,6 +120,76 @@ export function EmailAuthDialog() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      toast({
+        title: 'Signed In!',
+        description: "Welcome back.",
+      });
+      setOpen(false);
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Sign In Error',
+        description: 'Failed to sign in with Google. Please try again.',
+      });
+    }
+  };
+  
+  const renderAuthForms = (form: any, handler: any, buttonText: string, submittingText: string) => (
+    <>
+    <Form {...form}>
+      <AuthForm
+        onSubmit={form.handleSubmit(handler)}
+        isSubmitting={form.formState.isSubmitting}
+        buttonText={buttonText}
+        submittingText={submittingText}
+      >
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" placeholder="you@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" placeholder="••••••••" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </AuthForm>
+    </Form>
+    <div className="relative my-4">
+      <div className="absolute inset-0 flex items-center">
+        <span className="w-full border-t" />
+      </div>
+      <div className="relative flex justify-center text-xs uppercase">
+        <span className="bg-background px-2 text-muted-foreground">
+          Or continue with
+        </span>
+      </div>
+    </div>
+    <div onClick={handleGoogleSignIn}>
+        <GoogleSignInButton />
+    </div>
+    </>
+  )
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -107,74 +211,10 @@ export function EmailAuthDialog() {
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
           <TabsContent value="signin">
-            <Form {...signInForm}>
-              <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4 pt-4">
-                <FormField
-                  control={signInForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="you@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={signInForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={signInForm.formState.isSubmitting}>
-                  {signInForm.formState.isSubmitting ? 'Signing In...' : 'Sign In'}
-                </Button>
-              </form>
-            </Form>
+            {renderAuthForms(signInForm, handleSignIn, 'Sign In', 'Signing In...')}
           </TabsContent>
           <TabsContent value="signup">
-            <Form {...signUpForm}>
-              <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4 pt-4">
-                <FormField
-                  control={signUpForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="you@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={signUpForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={signUpForm.formState.isSubmitting}>
-                  {signUpForm.formState.isSubmitting ? 'Creating Account...' : 'Create Account'}
-                </Button>
-              </form>
-            </Form>
+            {renderAuthForms(signUpForm, handleSignUp, 'Create Account', 'Creating Account...')}
           </TabsContent>
         </Tabs>
       </DialogContent>

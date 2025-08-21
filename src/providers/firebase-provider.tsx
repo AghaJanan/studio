@@ -3,8 +3,7 @@
 import { createContext, useEffect, useState } from "react";
 import type { User } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth, firebaseConfig } from "@/lib/firebase/config";
-import { getApp, getApps, initializeApp } from "firebase/app";
+import { auth } from "@/lib/firebase/config";
 
 type FirebaseContextType = {
   user: User | null;
@@ -15,10 +14,6 @@ export const FirebaseContext = createContext<FirebaseContextType>({
   user: null,
   loading: true,
 });
-
-if (!getApps().length) {
-  initializeApp(firebaseConfig);
-}
 
 export function FirebaseProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

@@ -22,7 +22,7 @@ export function AuthButton() {
 
   const handleSignIn = async () => {
     await signInWithGoogle();
-    router.push('/dashboard');
+    // No longer redirects, just lets the auth state update
   };
 
   const handleSignOut = async () => {

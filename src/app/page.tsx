@@ -16,13 +16,6 @@ export default function Home() {
         <Logo />
         <div className="flex items-center gap-4">
           <AuthButton />
-          {user && (
-            <Button asChild>
-              <Link href="/dashboard">
-                Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          )}
         </div>
       </header>
       <main className="flex-1 flex items-center justify-center text-center px-4">
@@ -41,6 +34,13 @@ export default function Home() {
             <div className="mt-4">
               <AuthButton />
             </div>
+          )}
+          {user && (
+             <Button asChild>
+              <Link href="/dashboard">
+                Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
           )}
         </div>
       </main>
